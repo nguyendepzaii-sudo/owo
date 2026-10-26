@@ -1,0 +1,1865 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>OwO Order Management</title>
+  <style>
+    :root {
+      --bg: #f3f5f9;
+      --panel: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --good: #16a34a;
+      --good-bg: #dcfce7;
+      --bad: #e11d48;
+      --bad-bg: #ffe4e6;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    :focus-visible {
+      outline: 3px solid #93c5fd;
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: #111827;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      flex: 0 0 auto;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.1;
+    }
+
+    .brand-text p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      max-width: 100%;
+    }
+
+    .btn {
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: #111827;
+      border-radius: 11px;
+      padding: 9px 12px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+    }
+
+    .btn.primary {
+      background: #111827;
+      border-color: #111827;
+      color: #fff;
+    }
+
+    .btn.danger {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #be123c;
+    }
+
+    .btn.small {
+      padding: 7px 10px;
+      font-size: 0.875rem;
+    }
+
+    .btn.tiny {
+      padding: 6px 9px;
+      font-size: 0.8rem;
+      border-radius: 9px;
+    }
+
+    .btn.ghost {
+      background: transparent;
+    }
+
+    .fab {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 40;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: none;
+      background: #111827;
+      color: #fff;
+      font-size: 2rem;
+      line-height: 1;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.28);
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 14px 100px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 10px 11px;
+      border: 1px solid #d1d5db;
+      border-radius: 11px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .filter-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .result-count {
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+
+    .stats {
+      margin: 16px 0;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .stat strong {
+      display: block;
+      margin: 7px 0 3px;
+      font-size: 1.3rem;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .stat.good strong {
+      color: #15803d;
+    }
+
+    .stat.bad strong {
+      color: #be123c;
+    }
+
+    .owner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .owner h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .owner.chlin {
+      border-top: 4px solid #2563eb;
+    }
+
+    .owner.spekco {
+      border-top: 4px solid #9333ea;
+    }
+
+    .owner dl {
+      margin: 0;
+      display: grid;
+      gap: 7px;
+    }
+
+    .owner dl div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .owner dt {
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+
+    .owner dd {
+      margin: 0;
+      font-weight: 700;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .table-toolbar h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    thead th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .date-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .oid {
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .chip {
+      border: none;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .chip.good {
+      background: var(--good-bg);
+      color: #166534;
+    }
+
+    .chip.bad {
+      background: var(--bad-bg);
+      color: #be123c;
+    }
+
+    .owner-badge {
+      display: inline-block;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      font-weight: 800;
+    }
+
+    .owner-badge.chlin {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .owner-badge.spekco {
+      background: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .notes {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .storage-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 16px;
+    }
+
+    dialog {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 0;
+      width: 100%;
+      max-width: min(760px, calc(100vw - 24px));
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .dialog-inner {
+      max-height: 88vh;
+      overflow: auto;
+    }
+
+    .dialog-body {
+      padding: 18px;
+    }
+
+    .dialog-body h2 {
+      margin: 0 0 14px;
+      font-size: 1.15rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .qty-help {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 7px;
+    }
+
+    .qty-help.bad {
+      color: #be123c;
+      font-weight: 700;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 820px) {
+      .topbar {
+        padding: 10px;
+      }
+
+      .top-actions {
+        width: 100%;
+      }
+
+      table,
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+      }
+
+      thead {
+        display: none;
+      }
+
+      .table-wrap {
+        overflow: visible;
+      }
+
+      tbody tr {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        margin-bottom: 12px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 10px 12px;
+      }
+
+      td:last-child {
+        border-bottom: none;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-weight: 800;
+        flex: 0 0 38%;
+      }
+
+      td[data-label="Actions"] {
+        justify-content: flex-end;
+      }
+
+      td[data-label="Actions"]::before {
+        display: none;
+      }
+
+      td[data-label="Notes"] {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      td[data-label="Notes"]::before {
+        margin-bottom: 5px;
+      }
+
+      .date-cell {
+        align-items: flex-end;
+      }
+
+      .row-actions {
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">OwO</div>
+      <div class="brand-text">
+        <h1>OwO Orders</h1>
+        <p class="sub">Internal order & supplier payment tracking</p>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button id="settingsBtn" class="btn small" type="button">Settings</button>
+      <button id="backupBtn" class="btn small" type="button">Backup</button>
+      <button id="restoreBtn" class="btn small" type="button">Restore</button>
+      <button id="exportCsvBtn" class="btn small" type="button">Export CSV</button>
+      <button id="importCsvBtn" class="btn small" type="button">Import CSV</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="filters panel" aria-label="Filters">
+      <label>
+        Search notes or order ID
+        <input id="searchInput" type="search" placeholder="Search notes or order ID" autocomplete="off">
+      </label>
+
+      <div class="filter-grid">
+        <label>From date<input id="dateFrom" type="date"></label>
+        <label>To date<input id="dateTo" type="date"></label>
+
+        <label>
+          Delivered
+          <select id="deliveredFilter">
+            <option value="all">All</option>
+            <option value="yes">Delivered</option>
+            <option value="no">Not delivered</option>
+          </select>
+        </label>
+
+        <label>
+          Paid supplier
+          <select id="paidFilter">
+            <option value="all">All</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Not paid</option>
+          </select>
+        </label>
+
+        <label>
+          Owner
+          <select id="ownerFilter">
+            <option value="all">All</option>
+            <option value="chlin">chlin</option>
+            <option value="spekco">spekco</option>
+          </select>
+        </label>
+
+        <label>
+          Sort by date
+          <select id="sortOrder">
+            <option value="desc">Newest first</option>
+            <option value="asc">Oldest first</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="filter-actions">
+        <button id="resetFiltersBtn" class="btn small ghost" type="button">Reset filters</button>
+        <span id="resultCount" class="result-count"></span>
+      </div>
+    </section>
+
+    <section class="stats" aria-live="polite">
+      <div class="stat-grid">
+        <article class="card stat">
+          <span class="stat-label">Orders</span>
+          <strong id="statOrders">0</strong>
+          <small id="statOrdersSub">all records</small>
+        </article>
+
+        <article class="card stat good">
+          <span class="stat-label">OwO delivered</span>
+          <strong id="statDeliveredQty">0</strong>
+          <small id="statDeliveredOrders">0 delivered order(s)</small>
+        </article>
+
+        <article class="card stat bad">
+          <span class="stat-label">OwO not delivered</span>
+          <strong id="statNotDeliveredQty">0</strong>
+          <small id="statNotDeliveredOrders">0 not delivered order(s)</small>
+        </article>
+
+        <article class="card stat">
+          <span class="stat-label">Total OwO</span>
+          <strong id="statTotalQty">0</strong>
+          <small>across all orders</small>
+        </article>
+
+        <article class="card stat">
+          <span class="stat-label">Supplier payable</span>
+          <strong id="statPayable">0</strong>
+          <small>total cost</small>
+        </article>
+
+        <article class="card stat good">
+          <span class="stat-label">Paid supplier</span>
+          <strong id="statPaid">0</strong>
+          <small>paid cost</small>
+        </article>
+
+        <article class="card stat bad">
+          <span class="stat-label">Outstanding</span>
+          <strong id="statOutstanding">0</strong>
+          <small>not paid</small>
+        </article>
+      </div>
+
+      <div class="owner-grid">
+        <article class="card owner chlin">
+          <h2>chlin</h2>
+          <dl>
+            <div><dt>Orders</dt><dd id="chlinOrders">0</dd></div>
+            <div><dt>Total OwO</dt><dd id="chlinQty">0</dd></div>
+            <div><dt>Delivered</dt><dd id="chlinDelivered">0</dd></div>
+            <div><dt>Not delivered</dt><dd id="chlinNotDelivered">0</dd></div>
+            <div><dt>Supplier payable</dt><dd id="chlinPayable">0</dd></div>
+            <div><dt>Paid supplier</dt><dd id="chlinPaid">0</dd></div>
+            <div><dt>Outstanding</dt><dd id="chlinOutstanding">0</dd></div>
+          </dl>
+        </article>
+
+        <article class="card owner spekco">
+          <h2>spekco</h2>
+          <dl>
+            <div><dt>Orders</dt><dd id="spekcoOrders">0</dd></div>
+            <div><dt>Total OwO</dt><dd id="spekcoQty">0</dd></div>
+            <div><dt>Delivered</dt><dd id="spekcoDelivered">0</dd></div>
+            <div><dt>Not delivered</dt><dd id="spekcoNotDelivered">0</dd></div>
+            <div><dt>Supplier payable</dt><dd id="spekcoPayable">0</dd></div>
+            <div><dt>Paid supplier</dt><dd id="spekcoPaid">0</dd></div>
+            <div><dt>Outstanding</dt><dd id="spekcoOutstanding">0</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="table-toolbar">
+        <h2>Orders</h2>
+        <button id="addOrderTopBtn" class="btn primary" type="button">+ Add Order</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="ordersTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>OwO Qty</th>
+              <th>Delivered?</th>
+              <th>Cost in VND</th>
+              <th>Paid?</th>
+              <th>Owner</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTbody"></tbody>
+        </table>
+        <div id="emptyState" class="empty" hidden></div>
+      </div>
+    </section>
+
+    <p class="storage-note">
+      Data is stored only in this browser using localStorage. It will remain after reloading the page,
+      but it may be lost if you clear browser data, use private mode, or switch browser/device.
+      Use Backup/Export regularly.
+    </p>
+  </main>
+
+  <button id="addFab" class="fab" type="button" aria-label="Add order">+</button>
+
+  <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+  <input type="file" id="importCsvFile" accept=".csv,text/csv" hidden>
+
+  <dialog id="orderDialog">
+    <form id="orderForm" class="dialog-inner">
+      <input type="hidden" id="orderId">
+
+      <div class="dialog-body">
+        <h2 id="orderDialogTitle">Add order</h2>
+
+        <div class="form-grid">
+          <label>
+            Date
+            <input id="orderDate" type="date" required>
+          </label>
+
+          <label>
+            OwO quantity
+            <input id="orderQty" type="text" placeholder="3m, 500k, 1.5b, 1000000" required autocomplete="off">
+            <span id="qtyPreview" class="qty-help"></span>
+          </label>
+
+          <label>
+            Delivered to customer?
+            <select id="orderDelivered">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </label>
+
+          <label>
+            Paid supplier?
+            <select id="orderPaid">
+              <option value="no">Not Paid</option>
+              <option value="yes">Paid</option>
+            </select>
+          </label>
+
+          <label>
+            Customer belongs to
+            <select id="orderOwner">
+              <option value="chlin">chlin</option>
+              <option value="spekco">spekco</option>
+            </select>
+          </label>
+
+          <label class="full">
+            Notes
+            <textarea id="orderNotes" placeholder="Order ID, customer name, done, hold..."></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save order</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <form id="settingsForm" class="dialog-inner">
+      <div class="dialog-body">
+        <h2>Settings</h2>
+
+        <label>
+          Purchase price in VND per 1m OwO
+          <input id="priceInput" type="number" min="0" step="any" required>
+        </label>
+
+        <p id="priceExample" class="qty-help"></p>
+        <p class="qty-help">
+          Cost is calculated as: OwO quantity in millions × price per 1m.
+          Example: price 7,000 VND per 1m, quantity 3m = 21,000 VND.
+        </p>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save settings</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    'use strict';
+
+    const ORDERS_KEY = 'owoOrders.v1';
+    const SETTINGS_KEY = 'owoSettings.v1';
+
+    let orders = [];
+    let settings = { pricePer1m: 7000 };
+    let storageWarningShown = false;
+
+    const filters = {
+      search: '',
+      dateFrom: '',
+      dateTo: '',
+      delivered: 'all',
+      paid: 'all',
+      owner: 'all',
+      sort: 'desc'
+    };
+
+    const $ = (selector, ctx = document) => ctx.querySelector(selector);
+
+    const moneyFormatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
+    const exactFormatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[c];
+      });
+    }
+
+    function localISO(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + d;
+    }
+
+    function todayISO() {
+      return localISO(new Date());
+    }
+
+    function uid() {
+      return 'o_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+    }
+
+    function warnStorageOnce() {
+      if (!storageWarningShown) {
+        storageWarningShown = true;
+        alert('Warning: this browser could not save local data. Data may not persist.');
+      }
+    }
+
+    function parseQuantity(input) {
+      if (input == null) return NaN;
+
+      let s = String(input).trim().toLowerCase().replace(/\s+/g, '');
+      if (!s) return NaN;
+
+      const suffixMatch = s.match(/(k|m|b)$/);
+      let suffix = suffixMatch ? suffixMatch[1] : '';
+      if (suffix) s = s.slice(0, -1);
+
+      if (s.includes(',') && !s.includes('.')) {
+        const parts = s.split(',');
+        if (parts.length === 2 && parts[1].length !== 3) {
+          s = parts.join('.');
+        } else {
+          s = s.replace(/,/g, '');
+        }
+      } else {
+        s = s.replace(/,/g, '');
+      }
+
+      const m = s.match(/^([0-9]*\.?[0-9]+)$/);
+      if (!m) return NaN;
+
+      const num = parseFloat(m[1]);
+      if (!isFinite(num) || num < 0) return NaN;
+
+      const mult = suffix === 'k' ? 1e3 : suffix === 'm' ? 1e6 : suffix === 'b' ? 1e9 : 1;
+      return num * mult;
+    }
+
+    function trimFixed(n, digits) {
+      let s = n.toFixed(digits);
+      s = s.replace(/\.?0+$/, '');
+      return s;
+    }
+
+    function formatQty(actual) {
+      if (!isFinite(actual)) return '0';
+      const abs = Math.abs(actual);
+
+      if (abs >= 1e9) return trimFixed(actual / 1e9, 3) + 'b';
+      if (abs >= 1e6) return trimFixed(actual / 1e6, 3) + 'm';
+      if (abs >= 1e3) return trimFixed(actual / 1e3, 3) + 'k';
+      return trimFixed(actual, 3);
+    }
+
+    function formatMoney(amount) {
+      if (!isFinite(amount)) amount = 0;
+      return moneyFormatter.format(amount) + ' ₫';
+    }
+
+    function orderCost(order) {
+      const qty = Number(order.qty) || 0;
+      const price = Number(settings.pricePer1m) || 0;
+      return (qty / 1e6) * price;
+    }
+
+    function parseTruthy(value) {
+      const s = String(value == null ? '' : value).trim().toLowerCase();
+      if (!s) return false;
+
+      const falseExact = ['no', 'n', 'false', '0', 'not paid', 'not delivered', 'unpaid', 'hold', 'pending', 'cancel'];
+      if (falseExact.includes(s)) return false;
+
+      const trueExact = ['yes', 'y', 'true', '1', 'paid', 'delivered', 'done', 'complete', 'x'];
+      if (trueExact.includes(s)) return true;
+
+      if (s.startsWith('not')) return false;
+
+      if (
+        s.includes('paid') ||
+        s.includes('yes') ||
+        s.includes('delivered') ||
+        s.includes('done') ||
+        s.includes('true') ||
+        s === '1'
+      ) {
+        return true;
+      }
+
+      return false;
+    }
+
+    function toBool(value) {
+      return value === true || parseTruthy(value);
+    }
+
+    function normalizeDate(value) {
+      if (!value) return '';
+      const s = String(value).trim();
+
+      let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return m[1] + '-' + m[2] + '-' + m[3];
+
+      m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+      if (m) {
+        let a = Number(m[1]);
+        let b = Number(m[2]);
+        let y = Number(m[3]);
+        let month;
+        let day;
+
+        if (a > 12 && b <= 12) {
+          day = a;
+          month = b;
+        } else if (b > 12 && a <= 12) {
+          month = a;
+          day = b;
+        } else {
+          month = a;
+          day = b;
+        }
+
+        if (month < 1 || month > 12 || day < 1 || day > 31) return '';
+        return y + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+      }
+
+      const d = new Date(s);
+      if (!isNaN(d)) return localISO(d);
+
+      return '';
+    }
+
+    function csvEscape(value) {
+      const s = String(value == null ? '' : value);
+      if (/[",\n\r]/.test(s)) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }
+
+    function parseCSV(text) {
+      text = String(text == null ? '' : text).replace(/^\uFEFF/, '');
+
+      const rows = [];
+      let row = [];
+      let cur = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+
+        if (inQuotes) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') {
+              cur += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            cur += ch;
+          }
+        } else {
+          if (ch === '"') {
+            inQuotes = true;
+          } else if (ch === ',') {
+            row.push(cur);
+            cur = '';
+          } else if (ch === '\r') {
+            if (text[i + 1] === '\n') i++;
+            row.push(cur);
+            rows.push(row);
+            row = [];
+            cur = '';
+          } else if (ch === '\n') {
+            row.push(cur);
+            rows.push(row);
+            row = [];
+            cur = '';
+          } else {
+            cur += ch;
+          }
+        }
+      }
+
+      if (cur !== '' || row.length > 0) {
+        row.push(cur);
+        rows.push(row);
+      }
+
+      return rows.filter(function (r) {
+        return r.some(function (cellValue) {
+          return String(cellValue).trim() !== '';
+        });
+      });
+    }
+
+    function cell(row, idx) {
+      return idx >= 0 && row[idx] != null ? String(row[idx]) : '';
+    }
+
+    function sanitizeOrder(o) {
+      if (!o || typeof o !== 'object') return null;
+
+      const qty = Number(o.qty);
+      if (!isFinite(qty) || qty <= 0) return null;
+
+      const ownerRaw = String(o.owner || '').toLowerCase();
+      const owner = ownerRaw.includes('spek') ? 'spekco' : 'chlin';
+
+      return {
+        id: String(o.id || uid()),
+        createdAt: Number(o.createdAt) || Date.now(),
+        date: normalizeDate(o.date) || todayISO(),
+        qty: qty,
+        qtyText: String(o.qtyText || formatQty(qty)),
+        delivered: toBool(o.delivered),
+        paid: toBool(o.paid),
+        owner: owner,
+        notes: String(o.notes || '')
+      };
+    }
+
+    function loadState() {
+      try {
+        const rawOrders = localStorage.getItem(ORDERS_KEY);
+        if (rawOrders) {
+          const parsed = JSON.parse(rawOrders);
+          if (Array.isArray(parsed)) {
+            orders = parsed.map(sanitizeOrder).filter(Boolean);
+          }
+        }
+
+        const rawSettings = localStorage.getItem(SETTINGS_KEY);
+        if (rawSettings) {
+          const parsed = JSON.parse(rawSettings);
+          const price = Number(parsed.pricePer1m);
+          if (isFinite(price) && price >= 0) {
+            settings.pricePer1m = price;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load saved data.', err);
+        orders = [];
+        settings = { pricePer1m: 7000 };
+      }
+    }
+
+    function saveOrders() {
+      try {
+        localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+      } catch (err) {
+        console.error('Failed to save orders.', err);
+        warnStorageOnce();
+      }
+    }
+
+    function saveSettings() {
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      } catch (err) {
+        console.error('Failed to save settings.', err);
+        warnStorageOnce();
+      }
+    }
+
+    function downloadBlob(content, filename, type) {
+      const blob = new Blob([content], { type: type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
+    }
+
+    function openDialog(dialog) {
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute('open', '');
+      }
+    }
+
+    function closeDialog(dialog) {
+      if (typeof dialog.close === 'function') {
+        dialog.close();
+      } else {
+        dialog.removeAttribute('open');
+      }
+    }
+
+    function getFilteredOrders() {
+      const q = filters.search.trim().toLowerCase();
+
+      const filtered = orders.filter(function (o) {
+        if (filters.dateFrom && o.date < filters.dateFrom) return false;
+        if (filters.dateTo && o.date > filters.dateTo) return false;
+
+        if (filters.delivered === 'yes' && !o.delivered) return false;
+        if (filters.delivered === 'no' && o.delivered) return false;
+
+        if (filters.paid === 'paid' && !o.paid) return false;
+        if (filters.paid === 'unpaid' && o.paid) return false;
+
+        if (filters.owner !== 'all' && o.owner !== filters.owner) return false;
+
+        if (q) {
+          const hay = (String(o.notes || '') + ' ' + String(o.id || '')).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+
+        return true;
+      });
+
+      filtered.sort(function (a, b) {
+        const da = String(a.date || '');
+        const db = String(b.date || '');
+
+        if (da === db) {
+          const ca = Number(a.createdAt) || 0;
+          const cb = Number(b.createdAt) || 0;
+          return filters.sort === 'asc' ? ca - cb : cb - ca;
+        }
+
+        return filters.sort === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
+      });
+
+      return filtered;
+    }
+
+    function emptyOwnerStats() {
+      return {
+        orders: 0,
+        qty: 0,
+        deliveredQty: 0,
+        notDeliveredQty: 0,
+        notDeliveredOrders: 0,
+        payable: 0,
+        paid: 0,
+        outstanding: 0
+      };
+    }
+
+    function calcStats(list) {
+      const stats = {
+        totalOrders: list.length,
+        totalQty: 0,
+        deliveredQty: 0,
+        notDeliveredQty: 0,
+        deliveredOrders: 0,
+        notDeliveredOrders: 0,
+        payable: 0,
+        paid: 0,
+        outstanding: 0,
+        chlin: emptyOwnerStats(),
+        spekco: emptyOwnerStats()
+      };
+
+      for (const o of list) {
+        const cost = orderCost(o);
+
+        stats.totalQty += o.qty;
+        stats.payable += cost;
+
+        if (o.delivered) {
+          stats.deliveredQty += o.qty;
+          stats.deliveredOrders++;
+        } else {
+          stats.notDeliveredQty += o.qty;
+          stats.notDeliveredOrders++;
+        }
+
+        if (o.paid) {
+          stats.paid += cost;
+        } else {
+          stats.outstanding += cost;
+        }
+
+        const rec = o.owner === 'spekco' ? stats.spekco : stats.chlin;
+
+        rec.orders++;
+        rec.qty += o.qty;
+        rec.payable += cost;
+
+        if (o.delivered) {
+          rec.deliveredQty += o.qty;
+        } else {
+          rec.notDeliveredQty += o.qty;
+          rec.notDeliveredOrders++;
+        }
+
+        if (o.paid) {
+          rec.paid += cost;
+        } else {
+          rec.outstanding += cost;
+        }
+      }
+
+      return stats;
+    }
+
+    function renderOwnerStats(prefix, s) {
+      $('#' + prefix + 'Orders').textContent = s.orders;
+      $('#' + prefix + 'Qty').textContent = formatQty(s.qty);
+      $('#' + prefix + 'Delivered').textContent = formatQty(s.deliveredQty);
+      $('#' + prefix + 'NotDelivered').textContent = formatQty(s.notDeliveredQty) + ' (' + s.notDeliveredOrders + ')';
+      $('#' + prefix + 'Payable').textContent = formatMoney(s.payable);
+      $('#' + prefix + 'Paid').textContent = formatMoney(s.paid);
+      $('#' + prefix + 'Outstanding').textContent = formatMoney(s.outstanding);
+    }
+
+    function renderStats(stats) {
+      $('#statOrders').textContent = stats.totalOrders;
+      $('#statOrdersSub').textContent = 'all records';
+
+      $('#statDeliveredQty').textContent = formatQty(stats.deliveredQty);
+      $('#statDeliveredOrders').textContent = stats.deliveredOrders + ' delivered order(s)';
+
+      $('#statNotDeliveredQty').textContent = formatQty(stats.notDeliveredQty);
+      $('#statNotDeliveredOrders').textContent = stats.notDeliveredOrders + ' not delivered order(s)';
+
+      $('#statTotalQty').textContent = formatQty(stats.totalQty);
+      $('#statPayable').textContent = formatMoney(stats.payable);
+      $('#statPaid').textContent = formatMoney(stats.paid);
+      $('#statOutstanding').textContent = formatMoney(stats.outstanding);
+
+      renderOwnerStats('chlin', stats.chlin);
+      renderOwnerStats('spekco', stats.spekco);
+    }
+
+    function renderTable(list) {
+      const tbody = $('#ordersTbody');
+      const empty = $('#emptyState');
+
+      tbody.innerHTML = '';
+      empty.hidden = list.length > 0;
+
+      if (list.length === 0) {
+        empty.textContent = orders.length === 0
+          ? 'No orders yet. Tap "+ Add Order" to create the first order.'
+          : 'No orders match the current filters.';
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      for (const o of list) {
+        const tr = document.createElement('tr');
+        tr.dataset.id = o.id;
+
+        const exact = exactFormatter.format(o.qty);
+        const cost = formatMoney(orderCost(o));
+
+        tr.innerHTML =
+          '<td data-label="Date">' +
+            '<div class="date-cell">' +
+              '<span class="oid">#' + escapeHtml(String(o.id).slice(-6)) + '</span>' +
+              '<span>' + escapeHtml(o.date) + '</span>' +
+            '</div>' +
+          '</td>' +
+          '<td data-label="OwO Qty">' +
+            '<strong title="Exact: ' + escapeHtml(exact) + ' OwO">' +
+              escapeHtml(o.qtyText || formatQty(o.qty)) +
+            '</strong>' +
+          '</td>' +
+          '<td data-label="Delivered?">' +
+            '<button type="button" class="chip ' + (o.delivered ? 'good' : 'bad') + '" data-action="toggle-delivered">' +
+              (o.delivered ? 'Yes' : 'No') +
+            '</button>' +
+          '</td>' +
+          '<td data-label="Cost in VND">' + escapeHtml(cost) + '</td>' +
+          '<td data-label="Paid?">' +
+            '<button type="button" class="chip ' + (o.paid ? 'good' : 'bad') + '" data-action="toggle-paid">' +
+              (o.paid ? 'Paid' : 'Not Paid') +
+            '</button>' +
+          '</td>' +
+          '<td data-label="Owner">' +
+            '<span class="owner-badge ' + escapeHtml(o.owner) + '">' + escapeHtml(o.owner) + '</span>' +
+          '</td>' +
+          '<td data-label="Notes">' +
+            '<span class="notes">' + escapeHtml(o.notes || '—') + '</span>' +
+          '</td>' +
+          '<td data-label="Actions">' +
+            '<div class="row-actions">' +
+              '<button type="button" class="btn tiny" data-action="edit">Edit</button>' +
+              '<button type="button" class="btn tiny danger" data-action="delete">Delete</button>' +
+            '</div>' +
+          '</td>';
+
+        fragment.appendChild(tr);
+      }
+
+      tbody.appendChild(fragment);
+    }
+
+    function render() {
+      const filtered = getFilteredOrders();
+      const stats = calcStats(orders);
+
+      renderStats(stats);
+      renderTable(filtered);
+
+      $('#resultCount').textContent = filtered.length + ' of ' + orders.length + ' order(s) shown';
+    }
+
+    function openOrderDialog(order) {
+      const form = $('#orderForm');
+      form.reset();
+
+      $('#orderId').value = order ? order.id : '';
+      $('#orderDialogTitle').textContent = order ? 'Edit order' : 'Add order';
+      $('#orderDate').value = order ? order.date : todayISO();
+      $('#orderQty').value = order ? (order.qtyText || formatQty(order.qty)) : '';
+      $('#orderDelivered').value = order && order.delivered ? 'yes' : 'no';
+      $('#orderPaid').value = order && order.paid ? 'yes' : 'no';
+      $('#orderOwner').value = order && order.owner === 'spekco' ? 'spekco' : 'chlin';
+      $('#orderNotes').value = order ? order.notes : '';
+
+      updateQtyPreview();
+      openDialog($('#orderDialog'));
+    }
+
+    function updateQtyPreview() {
+      const raw = $('#orderQty').value;
+      const preview = $('#qtyPreview');
+
+      preview.classList.remove('bad');
+
+      if (!raw.trim()) {
+        preview.textContent = 'Examples: 3m, 500k, 1.5b, 1000000';
+        return;
+      }
+
+      const qty = parseQuantity(raw);
+
+      if (!isFinite(qty) || qty <= 0) {
+        preview.textContent = 'Invalid quantity. Use k, m, b or a plain number.';
+        preview.classList.add('bad');
+        return;
+      }
+
+      const cost = (qty / 1e6) * (Number(settings.pricePer1m) || 0);
+      preview.textContent = '= ' + formatQty(qty) + ' OwO • Cost ' + formatMoney(cost);
+    }
+
+    function handleOrderSubmit(e) {
+      e.preventDefault();
+
+      const id = $('#orderId').value;
+      const date = $('#orderDate').value || todayISO();
+      const qtyRaw = $('#orderQty').value.trim();
+      const qty = parseQuantity(qtyRaw);
+
+      if (!isFinite(qty) || qty <= 0) {
+        alert('Enter a valid OwO quantity, for example: 3m, 500k, 1.5b, or 1000000.');
+        return;
+      }
+
+      const data = {
+        date: date,
+        qty: qty,
+        qtyText: qtyRaw,
+        delivered: $('#orderDelivered').value === 'yes',
+        paid: $('#orderPaid').value === 'yes',
+        owner: $('#orderOwner').value === 'spekco' ? 'spekco' : 'chlin',
+        notes: $('#orderNotes').value.trim()
+      };
+
+      if (id) {
+        const idx = orders.findIndex(function (o) {
+          return o.id === id;
+        });
+
+        if (idx >= 0) {
+          orders[idx] = Object.assign({}, orders[idx], data);
+        }
+      } else {
+        orders.push(Object.assign({
+          id: uid(),
+          createdAt: Date.now()
+        }, data));
+      }
+
+      saveOrders();
+      closeDialog($('#orderDialog'));
+      render();
+    }
+
+    function openSettings() {
+      $('#priceInput').value = settings.pricePer1m;
+      updatePriceExample();
+      openDialog($('#settingsDialog'));
+    }
+
+    function updatePriceExample() {
+      const raw = $('#priceInput').value;
+      const price = parseFloat(String(raw).replace(/,/g, ''));
+      const example = $('#priceExample');
+
+      if (isFinite(price) && price >= 0) {
+        example.textContent = 'Example: 1m = ' + formatMoney(price) + ', 3m = ' + formatMoney(price * 3) + '.';
+      } else {
+        example.textContent = 'Enter a valid price.';
+      }
+    }
+
+    function handleSettingsSubmit(e) {
+      e.preventDefault();
+
+      const raw = $('#priceInput').value;
+      const price = parseFloat(String(raw).replace(/,/g, ''));
+
+      if (!isFinite(price) || price < 0) {
+        alert('Enter a valid purchase price.');
+        return;
+      }
+
+      settings.pricePer1m = price;
+      saveSettings();
+      closeDialog($('#settingsDialog'));
+
+      const orderDialog = $('#orderDialog');
+      if (orderDialog.open || orderDialog.hasAttribute('open')) {
+        updateQtyPreview();
+      }
+
+      render();
+    }
+
+    function exportCSV() {
+      const headers = [
+        'ID',
+        'Date',
+        'OwO Quantity',
+        'Actual OwO',
+        'Delivered to Customer?',
+        'Cost in VND',
+        'Paid Supplier?',
+        'Customer Belongs To',
+        'Notes'
+      ];
+
+      const rows = [headers];
+
+      const sorted = orders.slice().sort(function (a, b) {
+        return String(a.date || '').localeCompare(String(b.date || '')) || (Number(a.createdAt) - Number(b.createdAt));
+      });
+
+      for (const o of sorted) {
+        rows.push([
+          o.id,
+          o.date,
+          o.qtyText || formatQty(o.qty),
+          String(o.qty),
+          o.delivered ? 'Yes' : 'No',
+          orderCost(o).toFixed(2),
+          o.paid ? 'Paid' : 'Not Paid',
+          o.owner,
+          o.notes || ''
+        ]);
+      }
+
+      const csv = '\uFEFF' + rows.map(function (r) {
+        return r.map(csvEscape).join(',');
+      }).join('\r\n');
+
+      downloadBlob(csv, 'owo-orders-' + todayISO() + '.csv', 'text/csv;charset=utf-8');
+    }
+
+    async function handleImportCSV(e) {
+      const input = e.target;
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const rows = parseCSV(text);
+
+        if (!rows.length) {
+          alert('The CSV file is empty.');
+          return;
+        }
+
+        const header = rows[0].map(function (h) {
+          return String(h).trim().toLowerCase();
+        });
+
+        function findHeader(candidates) {
+          let idx = header.findIndex(function (h) {
+            return candidates.includes(h);
+          });
+
+          if (idx >= 0) return idx;
+
+          return header.findIndex(function (h) {
+            return candidates.some(function (c) {
+              return h.includes(c);
+            });
+          });
+        }
+
+        const idIdx = findHeader(['id', 'order id']);
+        const dateIdx = findHeader(['date', 'order date']);
+        const qtyIdx = findHeader(['owo quantity', 'quantity', 'qty']);
+        const actualIdx = findHeader(['actual owo', 'actual quantity', 'actual']);
+        const delIdx = findHeader(['delivered to customer?', 'delivered to customer', 'delivered']);
+        const paidIdx = findHeader(['paid supplier?', 'paid supplier', 'paid']);
+        const ownerIdx = findHeader(['customer belongs to', 'owner', 'customer']);
+        const notesIdx = findHeader(['notes', 'note']);
+
+        if (dateIdx < 0 || (qtyIdx < 0 && actualIdx < 0)) {
+          alert('CSV must include at least a Date header and an OwO Quantity or Actual OwO header. Export from this app for best compatibility.');
+          return;
+        }
+
+        let added = 0;
+        let updated = 0;
+        let skipped = 0;
+        const now = Date.now();
+
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r || r.every(function (x) { return String(x).trim() === ''; })) continue;
+
+          const date = normalizeDate(cell(r, dateIdx)) || todayISO();
+
+          let qty;
+          let qtyText = '';
+
+          const actualRaw = cell(r, actualIdx).trim();
+          if (actualRaw !== '') {
+            const actual = Number(actualRaw.replace(/[\s,]/g, ''));
+            if (isFinite(actual) && actual > 0) qty = actual;
+          }
+
+          if (qty === undefined) {
+            qtyText = cell(r, qtyIdx).trim();
+            qty = parseQuantity(qtyText);
+          }
+
+          if (!isFinite(qty) || qty <= 0) {
+            skipped++;
+            continue;
+          }
+
+          const delivered = delIdx >= 0 ? parseTruthy(cell(r, delIdx)) : false;
+          const paid = paidIdx >= 0 ? parseTruthy(cell(r, paidIdx)) : false;
+          const ownerRaw = cell(r, ownerIdx).trim().toLowerCase();
+          const owner = ownerRaw.includes('spek') ? 'spekco' : 'chlin';
+          const notes = cell(r, notesIdx).trim();
+
+          let id = cell(r, idIdx).trim();
+          if (!id) id = uid();
+
+          const idx = orders.findIndex(function (o) {
+            return o.id === id;
+          });
+
+          const data = {
+            date: date,
+            qty: qty,
+            qtyText: qtyText || formatQty(qty),
+            delivered: delivered,
+            paid: paid,
+            owner: owner,
+            notes: notes
+          };
+
+          if (idx >= 0) {
+            orders[idx] = Object.assign({}, orders[idx], data);
+            updated++;
+          } else {
+            orders.push(Object.assign({
+              id: id,
+              createdAt: now - (rows.length - i)
+            }, data));
+            added++;
+          }
+        }
+
+        saveOrders();
+        render();
+        alert('Import complete. Added: ' + added + ', updated: ' + updated + ', skipped: ' + skipped + '.');
+      } catch (err) {
+        console.error('CSV import failed.', err);
+        alert('Could not import CSV file.');
+      } finally {
+        input.value = '';
+      }
+    }
+
+    function backupJSON() {
+      const data = {
+        app: 'OwO Order Management',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        settings: settings,
+        orders: orders
+      };
+
+      downloadBlob(JSON.stringify(data, null, 2), 'owo-backup-' + todayISO() + '.json', 'application/json');
+    }
+
+    async function handleRestoreJSON(e) {
+      const input = e.target;
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        const incoming = Array.isArray(data) ? data : data.orders;
+        if (!Array.isArray(incoming)) throw new Error('No orders found');
+
+        const sanitized = incoming.map(sanitizeOrder).filter(Boolean);
+
+        if (!confirm('Restore backup and replace the current ' + orders.length + ' order(s)?')) {
+          return;
+        }
+
+        orders = sanitized;
+
+        if (data && data.settings) {
+          const price = Number(data.settings.pricePer1m);
+          if (isFinite(price) && price >= 0) {
+            settings.pricePer1m = price;
+          }
+        }
+
+        saveOrders();
+        saveSettings();
+        render();
+        alert('Restore complete.');
+      } catch (err) {
+        console.error('Restore failed.', err);
+        alert('Invalid backup file.');
+      } finally {
+        input.value = '';
+      }
+    }
+
+    function resetFilters() {
+      filters.search = '';
+      filters.dateFrom = '';
+      filters.dateTo = '';
+      filters.delivered = 'all';
+      filters.paid = 'all';
+      filters.owner = 'all';
+      filters.sort = 'desc';
+
+      $('#searchInput').value = '';
+      $('#dateFrom').value = '';
+      $('#dateTo').value = '';
+      $('#deliveredFilter').value = 'all';
+      $('#paidFilter').value = 'all';
+      $('#ownerFilter').value = 'all';
+      $('#sortOrder').value = 'desc';
+
+      render();
+    }
+
+    function handleRowClick(e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+
+      const id = tr.dataset.id;
+      const order = orders.find(function (o) {
+        return o.id === id;
+      });
+
+      if (!order) return;
+
+      const action = btn.dataset.action;
+
+      if (action === 'edit') {
+        openOrderDialog(order);
+      } else if (action === 'delete') {
+        if (confirm('Delete this order? This cannot be undone.')) {
+          orders = orders.filter(function (o) {
+            return o.id !== id;
+          });
+          saveOrders();
+          render();
+        }
+      } else if (action === 'toggle-delivered') {
+        order.delivered = !order.delivered;
+        saveOrders();
+        render();
+      } else if (action === 'toggle-paid') {
+        order.paid = !order.paid;
+        saveOrders();
+        render();
+      }
+    }
+
+    function bindEvents() {
+      $('#searchInput').addEventListener('input', function () {
+        filters.search = this.value;
+        render();
+      });
+
+      $('#dateFrom').addEventListener('change', function () {
+        filters.dateFrom = this.value;
+        render();
+      });
+
+      $('#dateTo').addEventListener('change', function () {
+        filters.dateTo = this.value;
+        render();
+      });
+
+      $('#deliveredFilter').addEventListener('change', function () {
+        filters.delivered = this.value;
+        render();
+      });
+
+      $('#paidFilter').addEventListener('change', function () {
+        filters.paid = this.value;
+        render();
+      });
+
+      $('#ownerFilter').addEventListener('change', function () {
+        filters.owner = this.value;
+        render();
+      });
+
+      $('#sortOrder').addEventListener('change', function () {
+        filters.sort = this.value;
+        render();
+      });
+
+      $('#resetFiltersBtn').addEventListener('click', resetFilters);
+
+      $('#ordersTbody').addEventListener('click', handleRowClick);
+
+      $('#addOrderTopBtn').addEventListener('click', function () {
+        openOrderDialog(null);
+      });
+
+      $('#addFab').addEventListener('click', function () {
+        openOrderDialog(null);
+      });
+
+      $('#orderForm').addEventListener('submit', handleOrderSubmit);
+      $('#orderQty').addEventListener('input', updateQtyPreview);
+
+      $('#settingsBtn').addEventListener('click', openSettings);
+      $('#settingsForm').addEventListener('submit', handleSettingsSubmit);
+      $('#priceInput').addEventListener('input', updatePriceExample);
+
+      $('#backupBtn').addEventListener('click', backupJSON);
+
+      $('#restoreBtn').addEventListener('click', function () {
+        $('#restoreFile').click();
+      });
+
+      $('#restoreFile').addEventListener('change', handleRestoreJSON);
+
+      $('#exportCsvBtn').addEventListener('click', exportCSV);
+
+      $('#importCsvBtn').addEventListener('click', function () {
+        $('#importCsvFile').click();
+      });
+
+      $('#importCsvFile').addEventListener('change', handleImportCSV);
+
+      document.querySelectorAll('[data-close]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const dlg = btn.closest('dialog');
+          if (dlg) closeDialog(dlg);
+        });
+      });
+    }
+
+    loadState();
+    bindEvents();
+    render();
+  </script>
+</body>
+</html>
